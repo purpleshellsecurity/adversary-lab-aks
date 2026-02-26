@@ -414,10 +414,10 @@ resource aksLoggingInitiative 'Microsoft.Authorization/policySetDefinitions@2023
   properties: {
     policyType: 'Custom'
     displayName: 'AKS Adversary Lab - MITRE ATT&CK Containers Logging & Security'
-    description: 'DeployIfNotExists enforcement for all 11 AKS diagnostic categories plus Audit policies for Defender, network policy, pod security, and identity.'
+    description: 'AuditIfNotExists for AKS and Key Vault diagnostic categories plus Audit policies for Defender, network policy, pod security, and identity. Explicit Bicep modules handle diagnostic deployment at deploy time.'
     metadata: {
       category: 'Kubernetes'
-      version: '2.0.0'
+      version: '2.1.0'
     }
     parameters: {
       logAnalyticsWorkspaceId: {
@@ -431,13 +431,13 @@ resource aksLoggingInitiative 'Microsoft.Authorization/policySetDefinitions@2023
       }
     }
     policyDefinitions: [
-      // 1. DINE: All 11 diagnostic categories (auto-remediate)
+      // 1. AuditIfNotExists: All 11 diagnostic categories (report compliance only)
       {
         policyDefinitionId: dineDiagPolicy.id
         policyDefinitionReferenceId: 'aksDineAllDiagCategories'
         parameters: {
           logAnalyticsWorkspaceId: { value: '[parameters(\'logAnalyticsWorkspaceId\')]' }
-          effect: { value: 'DeployIfNotExists' }
+          effect: { value: 'AuditIfNotExists' }
           diagnosticSettingName: { value: 'aks-full-security-diag-policy' }
         }
         groupNames: [ 'Logging' ]
@@ -463,13 +463,13 @@ resource aksLoggingInitiative 'Microsoft.Authorization/policySetDefinitions@2023
         parameters: { effect: { value: 'Audit' } }
         groupNames: [ 'Identity' ]
       }
-      // 5. DINE: Key Vault Diagnostic Settings (auto-remediate)
+      // 5. AuditIfNotExists: Key Vault Diagnostic Settings (report compliance only)
       {
         policyDefinitionId: dineKvDiagPolicy.id
         policyDefinitionReferenceId: 'kvDineAllDiagCategories'
         parameters: {
           logAnalyticsWorkspaceId: { value: '[parameters(\'logAnalyticsWorkspaceId\')]' }
-          effect: { value: 'DeployIfNotExists' }
+          effect: { value: 'AuditIfNotExists' }
           diagnosticSettingName: { value: 'kv-security-diag-policy' }
         }
         groupNames: [ 'Logging' ]
@@ -517,7 +517,7 @@ resource aksLoggingInitiative 'Microsoft.Authorization/policySetDefinitions@2023
       {
         name: 'Logging'
         displayName: 'Logging & Diagnostics'
-        description: 'DeployIfNotExists — auto-creates full diagnostic settings on any AKS cluster'
+        description: 'AuditIfNotExists — reports compliance for diagnostic settings deployed by Bicep modules'
       }
       {
         name: 'Security'
